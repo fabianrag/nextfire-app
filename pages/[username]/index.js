@@ -1,6 +1,6 @@
+import { getUserWithUsername, postToJSON } from '@/lib/firebase'
 import UserProfile from '@/components/UserProfile'
 import PostFeed from '@/components/PostFeed'
-import { getUserWithUsername, postToJSON } from '@/lib/firebase'
 import {
   collection,
   query as query2,
@@ -12,6 +12,7 @@ import {
 
 export async function getServerSideProps({ query }) {
   const { username } = query
+  
   const userDoc = await getUserWithUsername(username)
 
   //JSON serializable data

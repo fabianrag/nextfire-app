@@ -39,7 +39,16 @@ export async function getStaticPaths() {
 }
 
 export default function Post(props) {
+  const postRef = doc(db, props.path)
+  const [realtimePost] = useDocumentData(postRef)
+
+  const post = realtimePost || props.post
+
   return <main className={styles.container}>
+
+    <section>
+      <PostContent post={post} />
+    </section>
 
   </main>
 }
