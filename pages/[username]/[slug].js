@@ -50,5 +50,11 @@ export default function Post(props) {
       <PostContent post={post} />
     </section>
 
+    <aside className='card'>
+      <p>
+        <strong>{post.heartCount || 0} ❤️</strong>
+      </p>
+
+    </aside>
   </main>
 }
