@@ -1,8 +1,116 @@
-import Metatags from '@/components/Metatags'
+import AuthCheck from '@/components/AuthCheck'
+import styles from '@/styles/Admin.module.css'
+import { auth, db, postToJSON } from '@/lib/firebase'
+import { doc, serverTimestamp, updateDoc } from 'firebase/firestore'
+import { useRouter } from 'next/router'
+import { useState } from 'react'
+import {
+  useDocumentData,
+  useDocumentDataOnce,
+} from 'react-firebase-hooks/firestore'
+import { toast } from 'react-hot-toast'
+import { ReactMarkdown } from 'react-markdown/lib/react-markdown'
+import Link from 'next/link'
+import { useForm } from 'react-hook-form'
 
-export default function AdminPostsEdit({ }) {
-  return <main>
-    <Metatags title='admin page' />
-    <h1>Edit Post</h1>
-  </main>
+export default function AdminPostsEdit(props) {
+  return (
+    <AuthCheck>
+      <PostManager />
+    </AuthCheck>
+  )
+}
+
+function PostManager() {
+  const [preview, setPreview] = useState(false)
+
+  const router = useRouter()
+  const { slug } = router.query
+
+  const postRef = doc(db, 'users', auth.currentUser.uid, 'posts', slug)
+  const [post] = useDocumentDataOnce(postRef)
+
+  return (
+    <main className={styles.container}>
+      {post && (
+        <>
+          <section>
+            <h1>{post.title}</h1>
+            <p>ID: {post.slug}</p>
+
+            <PostForm
+              postRef={postRef}
+              defaultValues={post}
+              preview={preview}
+            />
+          </section>
+          <aside>
+            <h3>Tools</h3>
+            <button onClick={() => setPreview(!preview)}>
+              {preview ? 'Edit' : 'Preview'}
+            </button>
+            <Link href={`/${post.username}/${post.slug}`}>
+              <button className='btn-blue'>Live view</button>
+            </Link>
+          </aside>
+        </>
+      )}
+    </main>
+  )
+}
+
+function PostForm({ defaultValues, postRef, preview }) {
+  const { register, handleSubmit, reset, watch } = useForm({
+    defaultValues,
+    mode: 'onChange',
+  })
+
+  console.log(postRef.path)
+
+  const updatePost = async ({ content, published }) => {
+    await updateDoc(doc(db, postRef.path), {
+      content,
+      published,
+      updatedAt: serverTimestamp(),
+    })
+
+    reset({ content, published })
+
+    toast.success('Post updated successfully!')
+  }
+
+  return (
+    <form onSubmit={handleSubmit(updatePost)}>
+      {preview && (
+        <div className='card'>
+          <ReactMarkdown>{watch('content')}</ReactMarkdown>
+        </div>
+      )}
+
+      <div className={preview ? styles.hidden : styles.controls}>
+        <textarea
+          name='content'
+          ref={register({
+            maxLength: { value: 20000, message: 'content is too long' },
+            minLength: { value: 10, message: 'content is too short' },
+            required: { value: true, message: 'content is required' },
+          })}
+        ></textarea>
+
+        <fieldset>
+          <input
+            className={styles.checkbox}
+            name='published'
+            type='checkbox'
+            ref={register}
+          />
+          <label>Published</label>
+        </fieldset>
+
+        <button type='submit' className='btn-green'>
+          Save Changes
+        </button>
+      </div>
+    </form>
+  )
 }

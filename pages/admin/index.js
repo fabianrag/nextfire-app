@@ -4,7 +4,14 @@ import PostFeed from '@/components/PostFeed'
 import { UserContext } from '@/lib/context'
 import kebabCase from 'lodash.kebabcase'
 import { toast } from 'react-hot-toast'
-import { collection, doc, orderBy, query, serverTimestamp, setDoc } from 'firebase/firestore'
+import {
+  collection,
+  doc,
+  orderBy,
+  query,
+  serverTimestamp,
+  setDoc,
+} from 'firebase/firestore'
 import { auth, db } from '@/lib/firebase'
 import { useCollection } from 'react-firebase-hooks/firestore'
 import { useRouter } from 'next/router'
@@ -64,8 +71,8 @@ function CreateNewPost() {
       published: false,
       content: '# hello world!',
       createdAt: serverTimestamp(),
-      updateAt: serverTimestamp(),
-      heartCount: 0
+      updatedAt: serverTimestamp(),
+      heartCount: 0,
     }
 
     await setDoc(ref, data)
@@ -84,7 +91,9 @@ function CreateNewPost() {
         placeholder='My Awesome Article!'
         className={styles.input}
       />
-      <p><strong>Slug:</strong> {slug}</p>
+      <p>
+        <strong>Slug:</strong> {slug}
+      </p>
       <button type='submit' disabled={!isValid} className='btn-green'>
         Create New Post
       </button>

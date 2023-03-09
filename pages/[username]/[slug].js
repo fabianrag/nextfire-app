@@ -2,7 +2,13 @@ import styles from '@/styles/Post.module.css'
 import PostContent from '@/components/PostContent'
 import { db, getUserWithUsername, postToJSON } from '@/lib/firebase'
 import { useDocumentData } from 'react-firebase-hooks/firestore'
-import { collection, collectionGroup, doc, getDoc, getDocs, query } from 'firebase/firestore'
+import {
+  collectionGroup,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+} from 'firebase/firestore'
 
 export async function getStaticProps({ params }) {
   const { username, slug } = params
@@ -12,14 +18,15 @@ export async function getStaticProps({ params }) {
   let path
 
   if (userDoc) {
-    path = `users/${userDoc.id}/posts/${slug}`;
-    const postRef = doc(db, 'users', userDoc.id, 'posts', slug);
-    post = postToJSON(await getDoc(postRef));
+    path = `users/${userDoc.id}/posts/${slug}`
+    const postRef = doc(db, 'users', userDoc.id, 'posts', slug)
+    const getPost = await getDoc(postRef)
+    post = postToJSON(getPost)
   }
 
   return {
     props: { post, path },
-    revalidate: 5000
+    revalidate: 100,
   }
 }
 
@@ -28,13 +35,13 @@ export async function getStaticPaths() {
   const paths = snapshot.docs.map((doc) => {
     const { slug, username } = doc.data()
     return {
-      params: { username, slug }
+      params: { username, slug },
     }
   })
 
   return {
     paths,
-    fallback: 'blocking'
+    fallback: 'blocking',
   }
 }
 
@@ -44,17 +51,17 @@ export default function Post(props) {
 
   const post = realtimePost || props.post
 
-  return <main className={styles.container}>
+  return (
+    <main className={styles.container}>
+      <section>
+        <PostContent post={post} />
+      </section>
 
-    <section>
-      <PostContent post={post} />
-    </section>
-
-    <aside className='card'>
-      <p>
-        <strong>{post.heartCount || 0} ❤️</strong>
-      </p>
-
-    </aside>
-  </main>
+      <aside className='card'>
+        <p>
+          <strong>{post.heartCount || 0} ❤️</strong>
+        </p>
+      </aside>
+    </main>
+  )
 }
