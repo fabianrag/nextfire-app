@@ -65,8 +65,6 @@ function PostForm({ defaultValues, postRef, preview }) {
     mode: 'onChange',
   })
 
-  console.log(postRef.path)
-
   const updatePost = async ({ content, published }) => {
     await updateDoc(doc(db, postRef.path), {
       content,
@@ -89,8 +87,7 @@ function PostForm({ defaultValues, postRef, preview }) {
 
       <div className={preview ? styles.hidden : styles.controls}>
         <textarea
-          name='content'
-          ref={register({
+          {...register('content', {
             maxLength: { value: 20000, message: 'content is too long' },
             minLength: { value: 10, message: 'content is too short' },
             required: { value: true, message: 'content is required' },
@@ -100,9 +97,8 @@ function PostForm({ defaultValues, postRef, preview }) {
         <fieldset>
           <input
             className={styles.checkbox}
-            name='published'
             type='checkbox'
-            ref={register}
+            {...register('published')}
           />
           <label>Published</label>
         </fieldset>
