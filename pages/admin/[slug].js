@@ -2,12 +2,11 @@ import AuthCheck from '@/components/AuthCheck'
 import styles from '@/styles/Admin.module.css'
 import { auth, db, postToJSON } from '@/lib/firebase'
 import { doc, serverTimestamp, updateDoc } from 'firebase/firestore'
+import ImageUploader from '@/components/ImageUploader'
+
 import { useRouter } from 'next/router'
 import { useState } from 'react'
-import {
-  useDocumentData,
-  useDocumentDataOnce,
-} from 'react-firebase-hooks/firestore'
+import { useDocumentDataOnce } from 'react-firebase-hooks/firestore'
 import { toast } from 'react-hot-toast'
 import { ReactMarkdown } from 'react-markdown/lib/react-markdown'
 import Link from 'next/link'
@@ -60,7 +59,13 @@ function PostManager() {
 }
 
 function PostForm({ defaultValues, postRef, preview }) {
-  const { register, handleSubmit, reset, watch } = useForm({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors, isValid, isDirty },
+  } = useForm({
     defaultValues,
     mode: 'onChange',
   })
@@ -86,6 +91,8 @@ function PostForm({ defaultValues, postRef, preview }) {
       )}
 
       <div className={preview ? styles.hidden : styles.controls}>
+        <ImageUploader />
+
         <textarea
           {...register('content', {
             maxLength: { value: 20000, message: 'content is too long' },
@@ -93,6 +100,10 @@ function PostForm({ defaultValues, postRef, preview }) {
             required: { value: true, message: 'content is required' },
           })}
         ></textarea>
+
+        {errors.content && (
+          <p className='text-danger'>{errors.content.message}</p>
+        )}
 
         <fieldset>
           <input
@@ -103,7 +114,11 @@ function PostForm({ defaultValues, postRef, preview }) {
           <label>Published</label>
         </fieldset>
 
-        <button type='submit' className='btn-green'>
+        <button
+          type='submit'
+          className='btn-green'
+          disabled={!isDirty || !isValid}
+        >
           Save Changes
         </button>
       </div>
