@@ -43,6 +43,7 @@ function UsernameForm() {
   const [formValue, setFormValue] = useState('')
   const [isValid, setIsValid] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [checking, setChecking] = useState(false);
 
   const { user, username } = useContext(UserContext)
 
@@ -83,19 +84,21 @@ function UsernameForm() {
     }
   }
 
-  const checkUsername = useCallback(
-    debounce(async (username) => {
-      if (username.length >= 3) {
-        const ref = doc(db, `usernames/${username}`)
-        const document = await getDoc(ref)
-        const exist = document.exists()
-        console.log('Firestore read executed!')
-        setIsValid(!exist)
-        setLoading(false)
-      }
-    }, 500),
-    []
-  )
+const checkUsername = useCallback(
+  debounce(async (username) => {
+    if (username.length >= 3) {
+      setChecking(true);
+      const ref = doc(db, `usernames/${username}`);
+      const document = await getDoc(ref);
+      const exist = document.exists();
+      console.log('Firestore read executed!');
+      setIsValid(!exist);
+      setLoading(false);
+      setChecking(false);
+    }
+  }, 500),
+  []
+);
 
   return (
     <section>
@@ -112,9 +115,9 @@ function UsernameForm() {
           isValid={isValid}
           loading={loading}
         />
-        <button type='submit' className='btn-green' disabled={!isValid}>
-          Choose
-        </button>
+<button type='submit' className='btn-green' disabled={!isValid || checking}>
+  Choose
+</button>
 
         <h3>Debug State</h3>
         <div>
